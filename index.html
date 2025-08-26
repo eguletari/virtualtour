@@ -1,50 +1,109 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>My Virtual Tour</title>
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body style="margin:0; overflow:hidden;">
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-warning"></div>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>My Virtual Tour</title>
+  <style>
+    body { margin:0; overflow:hidden; background:#000; }
+
+    /* Loader overlay */
+    #custom-loader {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      font-family: sans-serif;
+      opacity: 1;
+      transition: opacity 0.8s ease;
+    }
+    #loader-logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+    #loader-text {
+      margin-bottom: 10px;
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+    #loader-bar {
+      width: 250px;
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #loader-progress {
+      height: 100%;
+      width: 0%;
+      background: #00adef; /* cyan blue */
+      transition: width 0.2s ease;
+    }
+
+    /* Unity container */
+    #unity-container, #unity-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    #unity-canvas {
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loader Screen -->
+  <div id="custom-loader">
+    <img src="TemplateData/logo.svg" alt="Logo" id="loader-logo">
+    <div id="loader-text">Loading tour...</div>
+    <div id="loader-bar">
+      <div id="loader-progress"></div>
     </div>
+  </div>
 
-    <script>
-      var canvas = document.querySelector("#unity-canvas");
+  <!-- Unity Container -->
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+  </div>
 
-      function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-        warningBanner.appendChild(div);
-      }
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/web1.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/web1.data",
-        frameworkUrl: buildUrl + "/web1.framework.js",
-        codeUrl: buildUrl + "/web1.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "first_tour_trial",
-        productVersion: "0.1.0",
-        showBanner: unityShowBanner,
-      };
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/web1.loader.js";
+    var config = {
+      dataUrl: buildUrl + "/web1.data",
+      frameworkUrl: buildUrl + "/web1.framework.js",
+      codeUrl: buildUrl + "/web1.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "DefaultCompany",
+      productName: "first_tour_trial",
+      productVersion: "0.1.0"
+    };
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config).catch((message) => {
-          alert(message);
-        });
-      };
-      document.body.appendChild(script);
-    </script>
-  </body>
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        // Update progress bar & text
+        document.getElementById("loader-progress").style.width = 
+          (progress * 100) + "%";
+        document.getElementById("loader-text").innerText = 
+          "Loading " + Math.round(progress * 100) + "%";
+      }).then((unityInstance) => {
+        // Fade out loader
+        var loader = document.getElementById("custom-loader");
+        loader.style.opacity = "0";
+        setTimeout(() => loader.style.display = "none", 800);
+      }).catch((message) => {
+        alert(message);
+      });
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
 </html>
