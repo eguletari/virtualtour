@@ -5,7 +5,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>My Virtual Tour</title>
   <style>
-    body { margin:0; overflow:hidden; background:#000; }
+    body {
+      margin:0;
+      background:#000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
 
     /* Loader overlay */
     #custom-loader {
@@ -41,24 +49,31 @@
     #loader-progress {
       height: 100%;
       width: 0%;
-      background: #00adef; /* cyan blue */
+      background: #00adef;
       transition: width 0.2s ease;
     }
 
-    /* Unity container */
-    #unity-container, #unity-canvas {
+    /* Unity canvas centered */
+    #unity-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 100%;
       height: 100%;
     }
     #unity-canvas {
       background: black;
+      width: 80vw;      /* tour width relative to screen */
+      height: 80vh;     /* tour height relative to screen */
+      max-width: 1280px;
+      max-height: 720px;
     }
   </style>
 </head>
 <body>
   <!-- Loader Screen -->
   <div id="custom-loader">
-    <img src="TemplateData/logo.png" alt="Logo" id="loader-logo">
+    <img src="TemplateData/logo.svg" alt="Logo" id="loader-logo">
     <div id="loader-text">Loading tour...</div>
     <div id="loader-bar">
       <div id="loader-progress"></div>
@@ -89,13 +104,11 @@
     script.src = loaderUrl;
     script.onload = () => {
       createUnityInstance(canvas, config, (progress) => {
-        // Update progress bar & text
-        document.getElementById("loader-progress").style.width = 
+        document.getElementById("loader-progress").style.width =
           (progress * 100) + "%";
-        document.getElementById("loader-text").innerText = 
+        document.getElementById("loader-text").innerText =
           "Loading " + Math.round(progress * 100) + "%";
       }).then((unityInstance) => {
-        // Fade out loader
         var loader = document.getElementById("custom-loader");
         loader.style.opacity = "0";
         setTimeout(() => loader.style.display = "none", 800);
